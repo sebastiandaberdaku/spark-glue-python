@@ -4,3 +4,4 @@ numpy>=1.15
 grpcio>=1.48,<1.57
 grpcio-status>=1.48,<1.57
 googleapis-common-protos==1.56.4
+delta-spark==3.2.0

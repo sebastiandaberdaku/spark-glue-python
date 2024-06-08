@@ -1,8 +1,8 @@
 # I am using the image defined in https://github.com/sebastiandaberdaku/spark-with-glue-builder/releases/tag/spark-v3.5.0
-FROM sebastiandaberdaku/spark-with-glue-builder:spark-v3.5.0 AS builder
+FROM sdaberdaku/spark-with-glue-builder:v3.5.1 AS builder
 
 # Starting with a clean image
-FROM python:3.10.12-slim-bookworm
+FROM python:3.10.14-slim-bookworm
 
 ARG spark_uid=185
 
@@ -36,7 +36,7 @@ USER spark
 WORKDIR /home/spark
 
 # first install pyspark from local dist folder
-ENV PYTHONPATH="${PYTHONPATH}:${SPARK_HOME}/python/lib/py4j-0.10.9.7-src.zip:${SPARK_HOME}/python/lib/pyspark.zip"
+RUN pip install --no-cache-dir --trusted-host pypi.python.org --editable ${SPARK_HOME}/python
 # then, install the other dependencies
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt
