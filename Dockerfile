@@ -1,4 +1,4 @@
-# I am using the image defined in https://github.com/sebastiandaberdaku/spark-with-glue-builder/releases/tag/spark-v3.5.0
+# I am using the image defined in https://github.com/sebastiandaberdaku/spark-with-glue-builder/releases/tag/spark-v3.5.1
 FROM sdaberdaku/spark-with-glue-builder:v3.5.1 AS builder
 
 # Starting with a clean image
@@ -17,8 +17,9 @@ RUN apt-get update; \
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV SPARK_HOME=/opt/spark
 ENV HADOOP_HOME=/opt/hadoop
-
-ENV PATH=${PATH}:/home/spark/.local/bin:${JAVA_HOME}/bin:${SPARK_HOME}/bin:${SPARK_HOME}/sbin:${HADOOP_HOME}/bin
+ENV HADOOP_COMMON_LIB_NATIVE_DIR="${HADOOP_HOME}/lib/native"
+ENV HADOOP_OPTS="${HADOOP_OPTS} -Djava.library.path=${HADOOP_HOME}/lib/native"
+ENV PATH="${PATH}:/home/spark/.local/bin:${JAVA_HOME}/bin:${SPARK_HOME}/bin:${SPARK_HOME}/sbin:${HADOOP_HOME}/bin"
 
 COPY --from=builder /opt/spark/dist/ ${SPARK_HOME}/
 COPY --from=builder /opt/hadoop/ ${HADOOP_HOME}/
@@ -35,10 +36,7 @@ RUN cp ${SPARK_HOME}/kubernetes/dockerfiles/spark/entrypoint.sh /opt/entrypoint.
 USER spark
 WORKDIR /home/spark
 
-# first install pyspark from local dist folder
-RUN pip install --no-cache-dir --trusted-host pypi.python.org --editable ${SPARK_HOME}/python
-# then, install the other dependencies
 COPY ./requirements.txt .
-RUN pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt
+RUN pip install --no-cache-dir --trusted-host pypi.python.org --editable ${SPARK_HOME}/python -r requirements.txt
 
 ENTRYPOINT ["/opt/entrypoint.sh"]
